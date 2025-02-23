@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0050A0" />
+    <meta
+      name="description"
+      content="Track your reading history, rate books, and organize your library"
+    />
+    <title>Book Logger - Sign In</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="manifest" href="../../manifest.json" />
+    <link rel="icon" type="image/x-icon" href="../icons/favicon.ico" />
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-4P9V6Z8JJ5"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-4P9V6Z8JJ5");
+    </script>
+  </head>
+  <body class="signin-page">
+    <main class="signin-container">
+      <div class="signin-content">
+        <header>
+          <h1>Book Logger</h1>
+          <p class="tagline">Track, Rate, and Organize Your Reading Journey</p>
+        </header>
+
+        <div class="features">
+          <ul>
+            <li>📚 Log books you've read</li>
+            <li>⭐ Rate and review your readings</li>
+            <li>📋 Organize by genre and author</li>
+            <li>💭 Add personal notes and reflections</li>
+            <li>🤖 Get AI-powered insights about your reading habits</li>
+          </ul>
+        </div>
+
+        <div class="signin-box">
+          <h2>Welcome Back</h2>
+          <p>Sign in with your Google account to access your book collection</p>
+          <button id="signIn" class="signin-button">
+            <img
+              src="../icons/google-icon.png"
+              alt="Google Icon"
+              class="google-icon"
+            />
+            Sign in with Google
+          </button>
+        </div>
+
+        <footer class="signin-footer">
+          <p>Your personal book tracking companion</p>
+          <p class="privacy-note">
+            We value your privacy. Your data is secured with Firebase.
+          </p>
+        </footer>
+      </div>
+    </main>
+
+    <script type="module" src="../js/signIn.js"></script>
+  </body>
+</html>

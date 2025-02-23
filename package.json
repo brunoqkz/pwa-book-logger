@@ -1,0 +1,37 @@
+{
+  "name": "book-logger",
+  "version": "1.0.0",
+  "description": "A PWA for tracking and managing your reading history",
+  "type": "module",
+  "scripts": {
+    "start": "parcel serve assets/html/*.html --open --hmr-port 1235",
+    "dev": "parcel serve assets/html/*.html --open --hmr-port 1235",
+    "build": "parcel build --dist-dir docs --public-url /pwa-book-logger/ assets/html/*.html",
+    "clean": "if exist .parcel-cache rmdir /s /q .parcel-cache && if exist dist rmdir /s /q dist",
+    "clean:unix": "rm -rf .parcel-cache dist",
+    "dev:clean": "npm run clean && npm run dev",
+    "dev:clean:unix": "npm run clean:unix && npm run dev"
+  },
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "targets": {
+    "default": {
+      "publicUrl": "/",
+      "sourceMap": true,
+      "engines": {
+        "browsers": "> 0.5%, last 2 versions, not dead"
+      }
+    }
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "dotenv": "^16.4.7",
+    "firebase": "^11.2.0",
+    "loglevel": "^1.9.2"
+  },
+  "devDependencies": {
+    "@parcel/config-default": "^2.11.0",
+    "@parcel/packager-raw-url": "^2.11.0",
+    "@parcel/transformer-webmanifest": "^2.11.0",
+    "parcel": "^2.11.0"
+  }
+}

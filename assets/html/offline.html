@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0050A0" />
+    <title>Book Logger - Offline</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="offline-container">
+      <div class="icon-container">
+        <svg class="offline-icon" viewBox="0 0 24 24">
+          <path
+            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"
+          />
+        </svg>
+      </div>
+
+      <h1>You're Offline</h1>
+      <p>Don't worry! Book Logger works offline. You can still:</p>
+
+      <ul class="features-list">
+        <li>View your book collection</li>
+        <li>Add new books to your library</li>
+        <li>Update existing book entries</li>
+        <li>Filter and sort your books</li>
+        <li>Access your reading notes</li>
+      </ul>
+
+      <p>Changes will sync automatically when you're back online.</p>
+
+      <button class="refresh-button" onclick="window.location.reload()">
+        Try Reconnecting
+      </button>
+
+      <p class="offline-note">
+        📚 Keep reading! Your literary journey continues even offline.
+      </p>
+    </div>
+
+    <script type="module">
+      // Check connection status and redirect if online
+      window.addEventListener("online", function () {
+        window.location.reload();
+      });
+
+      // Add service worker check
+      if ("serviceWorker" in navigator) {
+        const sw = new URL("../../service-worker.js", import.meta.url);
+        navigator.serviceWorker
+          .register(sw.href, {
+            scope: "/pwa-book-logger/",
+          })
+          .then((registration) => {
+            console.log("Service Worker registered");
+          })
+          .catch((error) => {
+            console.log("Service Worker registration failed:", error);
+          });
+      }
+    </script>
+  </body>
+</html>
