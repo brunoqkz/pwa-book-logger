@@ -2,20 +2,20 @@
   "name": "Book Logger PWA",
   "short_name": "BookLog",
   "description": "Track and manage your reading history with ratings and notes",
-  "start_url": "./assets/html/index.html",
+  "start_url": "/assets/html/index.html",
   "display": "standalone",
   "background_color": "#f4f4f4",
   "theme_color": "#0050A0",
   "orientation": "any",
   "icons": [
     {
-      "src": "./assets/icons/icon-128.png",
+      "src": "/assets/icons/icon-128.png",
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "./assets/icons/icon-512.png",
+      "src": "/assets/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -27,13 +27,14 @@
   "shortcuts": [
     {
       "name": "Add New Book",
-      "url": "./assets/html/books.html#add",
+      "url": "/assets/html/books.html#add",
       "description": "Add a new book to your collection"
     },
     {
       "name": "View Books",
-      "url": "./assets/html/books.html",
+      "url": "/assets/html/books.html",
       "description": "View your book collection"
     }
   ]
 }
+

@@ -1,8 +1,12 @@
-name: Deploy to GitHub Pages
+name: Deploy Vanilla JavaScript PWA Book Logger App
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -11,47 +15,110 @@ permissions:
   id-token: write
 
 jobs:
-  deploy:
+  lint-and-test:
+    name: Lint and Validate
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Create env file
-        run: |
-          touch .env
-          echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> .env
-          echo "FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }}" >> .env
-          echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env
-          echo "FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_STORAGE_BUCKET }}" >> .env
-          echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}" >> .env
-          echo "FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }}" >> .env
-          echo "GOOGLE_GENERATIVE_AI_API_KEY=${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}" >> .env
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
+      - name: Run ESLint
+        run: npm run lint || true
+
+  build:
+    name: Build Application
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Create Firebase Configuration
+        run: |
+          cat > .env << EOF
+          FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }}
+          EOF
+        shell: bash
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
         run: npm run build
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+      - name: List build artifacts
+        run: ls -la ./docs
 
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './docs'
+          path: ./docs
 
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  generate-logs:
+    name: Generate Workflow Logs
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Prepare log directory
+        run: |
+          mkdir -p logs
+          echo "Workflow Summary" > logs/workflow-summary.log
+          echo "Triggered by: ${{ github.actor }}" >> logs/workflow-summary.log
+          echo "Workflow run: ${{ github.run_id }}" >> logs/workflow-summary.log
+          echo "Timestamp: $(date)" >> logs/workflow-summary.log
+
+      - name: Compress logs
+        run: tar -czf workflow-logs.tar.gz logs
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-logs
+          path: workflow-logs.tar.gz
+          retention-days: 5
+

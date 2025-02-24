@@ -1,27 +1,19 @@
 {
-  "name": "book-logger",
+  "name": "pwa-book-logger",
   "version": "1.0.0",
-  "description": "A PWA for tracking and managing your reading history",
+  "description": "",
   "type": "module",
   "scripts": {
-    "start": "parcel serve assets/html/*.html --open --hmr-port 1235",
-    "dev": "parcel serve assets/html/*.html --open --hmr-port 1235",
-    "build": "parcel build --dist-dir docs --public-url /pwa-book-logger/ assets/html/*.html",
-    "clean": "if exist .parcel-cache rmdir /s /q .parcel-cache && if exist dist rmdir /s /q dist",
-    "clean:unix": "rm -rf .parcel-cache dist",
-    "dev:clean": "npm run clean && npm run dev",
-    "dev:clean:unix": "npm run clean:unix && npm run dev"
+    "start": "parcel assets/html/*.html",
+    "build": "parcel build --dist-dir docs --public-url /pwa-book-looger/ assets/html/*.html",
+    "dev:build": "parcel build --dist-dir dist --no-content-hash assets/html/*.html",
+    "dev:run": "npm run dev:build && npm run dev:start",
+    "dev:start": "parcel serve --dist-dir dist assets/html/*.html",
+    "lint": "eslint ."
   },
-  "browserslist": "> 0.5%, last 2 versions, not dead",
-  "targets": {
-    "default": {
-      "publicUrl": "/",
-      "sourceMap": true,
-      "engines": {
-        "browsers": "> 0.5%, last 2 versions, not dead"
-      }
-    }
-  },
+  "keywords": [],
+  "author": "Bruno Ribeiro da Silva",
+  "license": "ISC",
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
     "dotenv": "^16.4.7",
@@ -55,4 +47,3 @@
     "vm-browserify": "^1.1.2"
   }
 }
-
