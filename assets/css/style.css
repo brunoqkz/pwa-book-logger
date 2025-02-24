@@ -148,6 +148,21 @@ h1 {
   height: 24px;
 }
 
+.biometric-button {
+  margin-top: 1rem;
+  background-color: #28a745;
+  display: none; /* Hidden by default, shown if supported */
+}
+
+.biometric-button:hover {
+  background-color: #218838;
+}
+
+.fingerprint-icon {
+  font-size: 1.2rem;
+  margin-right: 0.5rem;
+}
+
 .signin-footer {
   margin-top: 2rem;
   color: #666;
