@@ -544,12 +544,14 @@ class BookLogger {
       <p>Genre: ${this.sanitizeInput(book.genre)}</p>
       <p>Rating: <span class="rating">${"★".repeat(book.rating)}${"☆".repeat(5 - book.rating)}</span></p>
       ${book.notes ? `<p>Notes: ${this.sanitizeInput(book.notes)}</p>` : ""}
-      <button class="edit-btn" 
-              data-id="${doc.id}" 
-              aria-label="Edit ${book.title}">Edit</button>
-      <button class="delete-btn" 
-              data-id="${doc.id}" 
-              aria-label="Delete ${book.title}">Delete</button>
+      <div class="book-actions">
+        <button class="edit-btn" 
+                data-id="${doc.id}" 
+                aria-label="Edit ${book.title}">Edit</button>
+        <button class="delete-btn" 
+                data-id="${doc.id}" 
+                aria-label="Delete ${book.title}">Delete</button>
+      </div>
     `;
 
     // Edit button event listener

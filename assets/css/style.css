@@ -254,17 +254,53 @@ button:disabled {
   margin: 0.5rem 0;
 }
 
+/* Updated button styles */
+.book-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.edit-btn,
 .delete-btn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background-color: var(--error-color);
-  padding: 5px 10px;
+  flex: 1;
+  position: static;
+  padding: 8px 10px;
   font-size: 0.9rem;
+  margin: 0;
+}
+
+.delete-btn {
+  background-color: var(--error-color);
 }
 
 .delete-btn:hover {
   background-color: #c82333;
+}
+
+.edit-btn {
+  background-color: var(--primary-color);
+}
+
+.edit-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+@media (min-width: 768px) {
+  .book-actions {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 10px;
+    margin-top: 0;
+  }
+
+  .edit-btn,
+  .delete-btn {
+    flex: none;
+    min-width: 60px;
+  }
 }
 
 .error {
@@ -452,12 +488,6 @@ button:disabled {
     padding: 1rem;
   }
 
-  .delete-btn {
-    position: static;
-    width: 100%;
-    margin-top: 1rem;
-  }
-
   input,
   select,
   textarea,
@@ -592,15 +622,6 @@ button:disabled {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.edit-btn {
-  position: absolute;
-  top: 1rem;
-  right: 4rem;
-  background-color: var(--primary-color);
-  padding: 5px 10px;
-  font-size: 0.9rem;
-}
-
 .cancel-edit-btn {
   background-color: #6c757d;
 }
@@ -612,17 +633,6 @@ button:disabled {
 @media (max-width: 768px) {
   .modal-content {
     width: 95%;
-  }
-
-  .edit-btn {
-    position: static;
-    width: 100%;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .delete-btn {
-    margin-bottom: 0;
   }
 
   .modal-footer {
