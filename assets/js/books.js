@@ -72,7 +72,7 @@ class BookLogger {
     this.setupFormValidation();
     this.bindEvents();
     this.initializeBooks();
-    this.isChatMinimized = false;
+    this.isChatMinimized = true;
   }
 
   setupFormValidation() {
