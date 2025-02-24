@@ -64,7 +64,7 @@ h1 {
 .container {
   margin: 20px auto;
   max-width: 800px;
-  padding: 0 20px;
+  padding: 0 20px 80px;
 }
 
 .signin-page {
@@ -471,7 +471,7 @@ button:disabled {
 
 @media (max-width: 768px) {
   .container {
-    padding: 0 10px;
+    padding: 0 10px 100px;
   }
 
   .filters {
