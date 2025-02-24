@@ -90,7 +90,7 @@ h1 {
 }
 
 .tagline {
-  color: #666;
+  color: white;
   font-size: 1.2rem;
   margin: 1rem 0 2rem;
 }
@@ -155,7 +155,7 @@ h1 {
 
 .privacy-note {
   font-size: 0.9rem;
-  color: #888;
+  color: black;
 }
 
 .form-group {
@@ -403,7 +403,7 @@ button:disabled {
 }
 
 .rating {
-  color: #ffd700;
+  color: black;
   letter-spacing: 2px;
 }
 
@@ -515,4 +515,3 @@ button:disabled {
     margin: 1rem 0;
   }
 }
-
