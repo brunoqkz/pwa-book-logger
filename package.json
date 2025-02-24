@@ -1,27 +1,25 @@
 {
   "name": "pwa-book-logger",
   "version": "1.0.0",
-  "description": "",
+  "description": "App to keep track of read books",
   "type": "module",
   "scripts": {
-    "start": "parcel assets/html/*.html",
+    "start": "parcel",
     "build": "parcel build --dist-dir docs --public-url /pwa-book-logger/ assets/html/*.html",
-    "dev:build": "parcel build --dist-dir dist --no-content-hash assets/html/*.html",
-    "dev:run": "npm run dev:build && npm run dev:start",
-    "dev:start": "parcel serve --dist-dir dist assets/html/*.html",
     "lint": "eslint ."
   },
+  "source": "assets/html/index.html",
   "keywords": [],
   "author": "Bruno Ribeiro da Silva",
   "license": "ISC",
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
     "dotenv": "^16.4.7",
-    "firebase": "^11.2.0",
-    "firebase-admin": "^13.0.2",
+    "firebase": "^11.3.1",
+    "firebase-admin": "^13.1.0",
     "gh-pages": "^6.3.0",
     "loglevel": "^1.9.2",
-    "parcel": "latest"
+    "parcel": "^2.13.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
@@ -31,9 +29,9 @@
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.1",
-    "eslint": "^9.18.0",
+    "eslint": "^9.21.0",
     "events": "^3.3.0",
-    "globals": "^15.14.0",
+    "globals": "^15.15.0",
     "https-browserify": "^1.0.0",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
