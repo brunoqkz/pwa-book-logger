@@ -3,18 +3,7 @@ import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 
 const provider = new GoogleAuthProvider();
 const signInBtn = document.getElementById("signIn");
-const bioAuthBtn = document.getElementById("bioAuth");
 const errorDiv = document.querySelector(".signin-error");
-
-// Check if WebAuthn is supported
-const isBiometricSupported = () => {
-  return (
-    window.PublicKeyCredential &&
-    typeof window.PublicKeyCredential === "function" &&
-    typeof window.PublicKeyCredential
-      .isUserVerifyingPlatformAuthenticatorAvailable === "function"
-  );
-};
 
 if ("serviceWorker" in navigator) {
   const sw = new URL("../../service-worker.js", import.meta.url);
@@ -33,9 +22,12 @@ async function signIn() {
     const result = await signInWithPopup(auth, provider);
     localStorage.setItem("email", JSON.stringify(result.user.email));
 
-    // Save credential ID for this user if they want to use biometrics later
-    if (isBiometricSupported()) {
-      await createCredentialIfNotExists(result.user.email);
+    if (await checkBiometricSupport()) {
+      try {
+        await createCredentialIfNotExists(result.user.email);
+      } catch (bioError) {
+        console.log("Biometric registration skipped:", bioError);
+      }
     }
 
     window.location.href = "books.html";
@@ -44,22 +36,55 @@ async function signIn() {
     signInBtn.innerHTML =
       '<img src="../icons/google-icon.png" alt="Google Icon" class="google-icon" />Sign in with Google';
 
-    if (errorDiv) {
-      errorDiv.textContent = "Sign in failed. Please try again.";
-      errorDiv.style.display = "block";
-    }
+    showError("Sign in failed. Please try again.");
+  }
+}
+
+function showError(message) {
+  if (errorDiv) {
+    errorDiv.textContent = message;
+    errorDiv.style.display = "block";
+  } else {
+    const newErrorDiv = document.createElement("div");
+    newErrorDiv.className = "error-message";
+    newErrorDiv.textContent = message;
+    document.querySelector(".signin-box")?.appendChild(newErrorDiv);
+  }
+}
+
+async function checkBiometricSupport() {
+  if (
+    !window.PublicKeyCredential ||
+    typeof window.PublicKeyCredential !== "function"
+  ) {
+    console.log("WebAuthn API not available");
+    return false;
+  }
+
+  try {
+    const available =
+      await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    console.log("Biometric authentication available:", available);
+    return available;
+  } catch (error) {
+    console.error("Error checking biometric support:", error);
+    return false;
   }
 }
 
 async function createCredentialIfNotExists(email) {
   const existingCredential = localStorage.getItem(`credential_${email}`);
-  if (existingCredential) return;
+  if (existingCredential) {
+    console.log("Existing credential found for", email);
+    return;
+  }
 
   try {
+    console.log("Creating new credential for", email);
+
     const challenge = new Uint8Array(32);
     window.crypto.getRandomValues(challenge);
 
-    // Create credential options
     const credentialCreationOptions = {
       publicKey: {
         challenge,
@@ -87,38 +112,40 @@ async function createCredentialIfNotExists(email) {
     const credential = await navigator.credentials.create(
       credentialCreationOptions,
     );
+    console.log("Credential created successfully:", credential);
 
-    // Store credential ID in localStorage
     localStorage.setItem(`credential_${email}`, credential.id);
   } catch (error) {
     console.error("Error creating credential:", error);
+    throw error;
   }
 }
 
 async function signInWithBiometric() {
   try {
-    // Check if there's a previously saved credential for any user
     const emails = Object.keys(localStorage)
       .filter((key) => key.startsWith("credential_"))
       .map((key) => key.replace("credential_", ""));
 
+    console.log("Found credentials for emails:", emails);
+
     if (emails.length === 0) {
-      if (errorDiv) {
-        errorDiv.textContent =
-          "No biometric credentials found. Please sign in with Google first.";
-        errorDiv.style.display = "block";
-      }
+      showError(
+        "No biometric credentials found. Please sign in with Google first.",
+      );
       return;
     }
 
-    bioAuthBtn.disabled = true;
-    bioAuthBtn.innerHTML = '<span class="loading-spinner"></span> Verifying...';
+    const bioAuthBtn = document.getElementById("bioAuth");
+    if (bioAuthBtn) {
+      bioAuthBtn.disabled = true;
+      bioAuthBtn.innerHTML =
+        '<span class="loading-spinner"></span> Verifying...';
+    }
 
-    // Generate a random challenge
     const challenge = new Uint8Array(32);
     window.crypto.getRandomValues(challenge);
 
-    // Authentication options
     const authOptions = {
       publicKey: {
         challenge,
@@ -127,13 +154,15 @@ async function signInWithBiometric() {
       },
     };
 
-    const assertion = await navigator.credentials.get(authOptions);
+    console.log("Requesting credential verification");
 
-    // Find which user this credential belongs to
+    const assertion = await navigator.credentials.get(authOptions);
+    console.log("Assertion received:", assertion);
+
     for (const email of emails) {
       const credentialId = localStorage.getItem(`credential_${email}`);
       if (assertion.id === credentialId) {
-        // User authenticated successfully
+        console.log("Credential matched for email:", email);
         localStorage.setItem("email", JSON.stringify(email));
         window.location.href = "books.html";
         return;
@@ -143,32 +172,54 @@ async function signInWithBiometric() {
     throw new Error("No matching credential found");
   } catch (error) {
     console.error("Biometric authentication error:", error);
-    if (errorDiv) {
-      errorDiv.textContent =
-        "Biometric authentication failed. Please try again or sign in with Google.";
-      errorDiv.style.display = "block";
-    }
-  } finally {
+    showError(
+      "Biometric authentication failed. Please try again or sign in with Google.",
+    );
+
+    const bioAuthBtn = document.getElementById("bioAuth");
     if (bioAuthBtn) {
       bioAuthBtn.disabled = false;
       bioAuthBtn.innerHTML =
-        '<span class="fingerprint-icon">👆</span> Sign in with Biometrics';
+        '<span class="fingerprint-icon" aria-hidden="true">👆</span> Sign in with Biometrics';
     }
   }
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
-  if (bioAuthBtn) {
-    if (isBiometricSupported()) {
+function initBiometricButton() {
+  const bioAuthBtn = document.getElementById("bioAuth");
+  if (!bioAuthBtn) {
+    console.error("Biometric button not found in DOM");
+    return;
+  }
+
+  checkBiometricSupport().then((supported) => {
+    if (supported) {
+      console.log("Setting up biometric button");
       bioAuthBtn.style.display = "flex";
-      bioAuthBtn.addEventListener("click", signInWithBiometric);
+
+      bioAuthBtn.replaceWith(bioAuthBtn.cloneNode(true));
+
+      const freshBioBtn = document.getElementById("bioAuth");
+      freshBioBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        console.log("Biometric button clicked");
+        signInWithBiometric();
+      });
     } else {
+      console.log("Biometrics not supported, hiding button");
       bioAuthBtn.style.display = "none";
     }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM loaded, initializing biometric button");
+  initBiometricButton();
+
+  if (signInBtn) {
+    signInBtn.addEventListener("click", signIn);
   }
 });
-
-signInBtn?.addEventListener("click", signIn);
 
 auth.onAuthStateChanged((user) => {
   if (user) window.location.href = "books.html";

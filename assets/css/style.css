@@ -150,17 +150,28 @@ h1 {
 
 .biometric-button {
   margin-top: 1rem;
-  background-color: #28a745;
-  display: none; /* Hidden by default, shown if supported */
+  background-color: #007525;
+  color: white;
+  font-weight: bold;
+  display: none;
+  position: relative;
+  padding-left: 2.5rem;
 }
 
 .biometric-button:hover {
-  background-color: #218838;
+  background-color: #005d1e;
 }
 
 .fingerprint-icon {
+  position: absolute;
+  left: 1rem;
   font-size: 1.2rem;
-  margin-right: 0.5rem;
+}
+
+.biometric-button:focus {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 117, 37, 0.5);
 }
 
 .signin-footer {
