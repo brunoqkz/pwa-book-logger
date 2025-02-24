@@ -9,6 +9,7 @@ import {
   query,
   where,
   orderBy,
+  updateDoc,
 } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 
@@ -47,6 +48,22 @@ class BookLogger {
 
     // Sign out button
     this.signOutBttn = document.getElementById("signoutbttn");
+
+    // Edit modal elements
+    this.editModal = document.getElementById("edit-modal");
+    this.closeModalBtn = document.querySelector(".close-modal");
+    this.cancelEditBtn = document.querySelector(".cancel-edit-btn");
+    this.updateBookBtn = document.getElementById("update-book-btn");
+
+    // Edit form elements
+    this.editBookTitle = document.getElementById("edit-booktitle");
+    this.editBookAuthor = document.getElementById("edit-bookauthor");
+    this.editBookGenre = document.getElementById("edit-bookgenre");
+    this.editBookRating = document.getElementById("edit-bookrating");
+    this.editBookNotes = document.getElementById("edit-booknotes");
+
+    // Current book ID being edited
+    this.currentEditBookId = null;
 
     // Initialize unique sets for filters
     this.genres = new Set();
@@ -87,6 +104,7 @@ class BookLogger {
 
     switch (field) {
       case this.bookTitle:
+      case this.editBookTitle:
         if (value.length < 2) {
           this.handleFormError(
             field,
@@ -96,6 +114,7 @@ class BookLogger {
         }
         break;
       case this.bookAuthor:
+      case this.editBookAuthor:
         if (value.length < 2) {
           this.handleFormError(
             field,
@@ -105,6 +124,7 @@ class BookLogger {
         }
         break;
       case this.bookRating:
+      case this.editBookRating:
         const rating = parseInt(value);
         if (isNaN(rating) || rating < 1 || rating > 5) {
           this.handleFormError(field, "Rating must be between 1 and 5");
@@ -189,6 +209,37 @@ class BookLogger {
     if (this.chatToggleBtn) {
       this.chatToggleBtn.addEventListener("click", () => this.maximizeChat());
     }
+
+    // Edit modal event listeners
+    if (this.closeModalBtn) {
+      this.closeModalBtn.addEventListener("click", () => this.closeEditModal());
+    }
+
+    if (this.cancelEditBtn) {
+      this.cancelEditBtn.addEventListener("click", () => this.closeEditModal());
+    }
+
+    if (this.updateBookBtn) {
+      this.updateBookBtn.addEventListener("click", () =>
+        this.handleUpdateBook(),
+      );
+    }
+
+    // Close modal if clicking outside the content
+    if (this.editModal) {
+      this.editModal.addEventListener("click", (e) => {
+        if (e.target === this.editModal) {
+          this.closeEditModal();
+        }
+      });
+
+      // Close modal on escape key
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && this.isModalOpen()) {
+          this.closeEditModal();
+        }
+      });
+    }
   }
 
   minimizeChat() {
@@ -211,6 +262,59 @@ class BookLogger {
     }
   }
 
+  isModalOpen() {
+    return this.editModal && this.editModal.classList.contains("visible");
+  }
+
+  openEditModal(bookId, bookData) {
+    if (!this.editModal) return;
+
+    // Set current book being edited
+    this.currentEditBookId = bookId;
+
+    // Populate form with book data
+    this.editBookTitle.value = bookData.title || "";
+    this.editBookAuthor.value = bookData.author || "";
+    this.editBookGenre.value = bookData.genre || "";
+    this.editBookRating.value = bookData.rating || "";
+    this.editBookNotes.value = bookData.notes || "";
+
+    // Show modal
+    this.editModal.classList.add("visible");
+    this.editModal.setAttribute("aria-hidden", "false");
+    this.editBookTitle.focus();
+
+    // Prevent background scrolling
+    document.body.style.overflow = "hidden";
+  }
+
+  closeEditModal() {
+    if (!this.editModal) return;
+
+    // Hide modal
+    this.editModal.classList.remove("visible");
+    this.editModal.setAttribute("aria-hidden", "true");
+    this.currentEditBookId = null;
+
+    // Clear form validation states
+    const fields = [
+      this.editBookTitle,
+      this.editBookAuthor,
+      this.editBookGenre,
+      this.editBookRating,
+      this.editBookNotes,
+    ];
+
+    fields.forEach((field) => {
+      if (field) {
+        this.clearFieldError(field);
+      }
+    });
+
+    // Restore background scrolling
+    document.body.style.overflow = "";
+  }
+
   handleSignOut() {
     localStorage.removeItem("email");
     signOut(auth)
@@ -218,7 +322,7 @@ class BookLogger {
         window.location.href = "index.html";
       })
       .catch((error) => {
-        log.error("Sign-out error:", error);
+        console.error("Sign-out error:", error);
         this.showError("Failed to sign out. Please try again.");
       });
   }
@@ -269,10 +373,70 @@ class BookLogger {
       this.clearForm();
       await this.initializeBooks();
     } catch (error) {
-      log.error("Error adding book:", error);
+      console.error("Error adding book:", error);
       this.showError("Failed to add book. Please try again.");
     } finally {
       this.setLoadingState(false);
+    }
+  }
+
+  async handleUpdateBook() {
+    try {
+      const requiredFields = [
+        this.editBookTitle,
+        this.editBookAuthor,
+        this.editBookGenre,
+        this.editBookRating,
+      ];
+
+      // Validate all fields before submission
+      const isValid = requiredFields.every(
+        (field) => field && this.validateField(field),
+      );
+
+      if (!isValid) {
+        const firstInvalidField = requiredFields.find(
+          (field) => field && !this.validateField(field),
+        );
+        if (firstInvalidField) {
+          firstInvalidField.focus();
+        }
+        return;
+      }
+
+      // If no book ID, return
+      if (!this.currentEditBookId) {
+        this.showError("Error updating book: Book ID not found");
+        return;
+      }
+
+      const title = this.sanitizeInput(this.editBookTitle.value.trim());
+      const author = this.sanitizeInput(this.editBookAuthor.value.trim());
+      const genre = this.sanitizeInput(this.editBookGenre.value.trim());
+      const rating = parseInt(this.editBookRating.value);
+      const notes = this.editBookNotes
+        ? this.sanitizeInput(this.editBookNotes.value.trim())
+        : "";
+
+      this.setUpdateLoadingState(true);
+
+      await this.updateBookInFirestore(this.currentEditBookId, {
+        title,
+        author,
+        genre,
+        rating,
+        notes,
+        lastUpdated: new Date(),
+      });
+
+      this.showSuccessMessage("Book updated successfully!");
+      this.closeEditModal();
+      await this.initializeBooks();
+    } catch (error) {
+      console.error("Error updating book:", error);
+      this.showError("Failed to update book. Please try again.");
+    } finally {
+      this.setUpdateLoadingState(false);
     }
   }
 
@@ -282,6 +446,15 @@ class BookLogger {
       this.addBookBtn.innerHTML = isLoading
         ? '<span class="loading-spinner"></span> Adding...'
         : "Add Book";
+    }
+  }
+
+  setUpdateLoadingState(isLoading) {
+    if (this.updateBookBtn) {
+      this.updateBookBtn.disabled = isLoading;
+      this.updateBookBtn.innerHTML = isLoading
+        ? '<span class="loading-spinner"></span> Updating...'
+        : "Update Book";
     }
   }
 
@@ -333,6 +506,11 @@ class BookLogger {
     });
   }
 
+  async updateBookInFirestore(bookId, updatedData) {
+    const bookRef = doc(db, "books", bookId);
+    await updateDoc(bookRef, updatedData);
+  }
+
   async getBooksFromFirestore() {
     const q = query(
       collection(db, "books"),
@@ -349,7 +527,7 @@ class BookLogger {
       await this.initializeBooks();
       this.showSuccessMessage("Book deleted successfully!");
     } catch (error) {
-      log.error("Error deleting book:", error);
+      console.error("Error deleting book:", error);
       this.showError("Failed to delete book. Please try again.");
     }
   }
@@ -366,11 +544,23 @@ class BookLogger {
       <p>Genre: ${this.sanitizeInput(book.genre)}</p>
       <p>Rating: <span class="rating">${"★".repeat(book.rating)}${"☆".repeat(5 - book.rating)}</span></p>
       ${book.notes ? `<p>Notes: ${this.sanitizeInput(book.notes)}</p>` : ""}
+      <button class="edit-btn" 
+              data-id="${doc.id}" 
+              aria-label="Edit ${book.title}">Edit</button>
       <button class="delete-btn" 
               data-id="${doc.id}" 
               aria-label="Delete ${book.title}">Delete</button>
     `;
 
+    // Edit button event listener
+    const editBtn = bookElement.querySelector(".edit-btn");
+    if (editBtn) {
+      editBtn.addEventListener("click", () => {
+        this.openEditModal(doc.id, book);
+      });
+    }
+
+    // Delete button event listener
     const deleteBtn = bookElement.querySelector(".delete-btn");
     if (deleteBtn) {
       deleteBtn.addEventListener("click", (e) => {
@@ -435,7 +625,7 @@ class BookLogger {
       this.updateFilters(books);
       this.renderBooks(books);
     } catch (error) {
-      log.error("Error initializing books:", error);
+      console.error("Error initializing books:", error);
       this.showError("Failed to load books. Please refresh the page.");
     }
   }
@@ -510,4 +700,3 @@ class BookLogger {
 document.addEventListener("DOMContentLoaded", () => {
   new BookLogger();
 });
-

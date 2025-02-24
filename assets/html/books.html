@@ -154,8 +154,90 @@
           Chat with Book Assistant
         </button>
       </div>
+
+      <!-- Edit Book Modal -->
+      <div
+        id="edit-modal"
+        class="modal"
+        role="dialog"
+        aria-labelledby="edit-book-heading"
+        aria-hidden="true"
+      >
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 id="edit-book-heading">Edit Book</h2>
+            <button class="close-modal" aria-label="Close edit dialog">
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="edit-booktitle">Book title</label>
+              <input
+                type="text"
+                id="edit-booktitle"
+                placeholder="Book title"
+                required
+                aria-required="true"
+                aria-invalid="false"
+              />
+            </div>
+            <div class="form-group">
+              <label for="edit-bookauthor">Author</label>
+              <input
+                type="text"
+                id="edit-bookauthor"
+                placeholder="Author"
+                required
+                aria-required="true"
+                aria-invalid="false"
+              />
+            </div>
+            <div class="form-group">
+              <label for="edit-bookgenre">Genre</label>
+              <input
+                type="text"
+                id="edit-bookgenre"
+                placeholder="Genre"
+                required
+                aria-required="true"
+                aria-invalid="false"
+              />
+            </div>
+            <div class="form-group">
+              <label for="edit-bookrating">Rating</label>
+              <select id="edit-bookrating" required aria-required="true">
+                <option value="">Select rating</option>
+                <option value="5">5 stars</option>
+                <option value="4">4 stars</option>
+                <option value="3">3 stars</option>
+                <option value="2">2 stars</option>
+                <option value="1">1 star</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="edit-booknotes">Notes</label>
+              <textarea
+                id="edit-booknotes"
+                placeholder="Notes (optional)"
+              ></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="update-book-btn" type="button" aria-label="Update book">
+              Update Book
+            </button>
+            <button
+              class="cancel-edit-btn"
+              type="button"
+              aria-label="Cancel edit"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
     </main>
     <script type="module" src="../js/books.js"></script>
   </body>
 </html>
-
